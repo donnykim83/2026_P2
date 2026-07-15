@@ -8,7 +8,8 @@ type Props = {
 };
 
 export default function PhotoUploader({ onImageSelected, previewUrl }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   function handleFile(file: File | undefined) {
@@ -19,35 +20,68 @@ export default function PhotoUploader({ onImageSelected, previewUrl }: Props) {
   }
 
   return (
-    <div
-      className={`uploader ${isDragging ? "uploader--dragging" : ""}`}
-      onClick={() => inputRef.current?.click()}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setIsDragging(true);
-      }}
-      onDragLeave={() => setIsDragging(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setIsDragging(false);
-        handleFile(e.dataTransfer.files?.[0]);
-      }}
-    >
+    <div>
+      <div
+        className={`uploader ${isDragging ? "uploader--dragging" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          handleFile(e.dataTransfer.files?.[0]);
+        }}
+      >
+        {previewUrl ? (
+          <img src={previewUrl} alt="업로드한 사진 미리보기" className="uploader__preview" />
+        ) : (
+          <div className="uploader__placeholder">
+            <p>사진을 선택해주세요</p>
+            <span>JPG, PNG, WEBP · 최대 5MB</span>
+          </div>
+        )}
+      </div>
+
+      <div className="uploader__actions">
+        <button
+          type="button"
+          className="uploader__action-btn"
+          onClick={() => cameraInputRef.current?.click()}
+        >
+          📷 카메라로 촬영
+        </button>
+        <button
+          type="button"
+          className="uploader__action-btn"
+          onClick={() => galleryInputRef.current?.click()}
+        >
+          🖼️ 갤러리에서 선택
+        </button>
+      </div>
+
       <input
-        ref={inputRef}
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="user"
+        hidden
+        onChange={(e) => {
+          handleFile(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={galleryInputRef}
         type="file"
         accept="image/*"
         hidden
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        onChange={(e) => {
+          handleFile(e.target.files?.[0]);
+          e.target.value = "";
+        }}
       />
-      {previewUrl ? (
-        <img src={previewUrl} alt="업로드한 사진 미리보기" className="uploader__preview" />
-      ) : (
-        <div className="uploader__placeholder">
-          <p>사진을 클릭하거나 드래그해서 업로드하세요</p>
-          <span>JPG, PNG, WEBP · 최대 5MB</span>
-        </div>
-      )}
     </div>
   );
 }
