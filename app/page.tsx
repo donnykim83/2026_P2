@@ -5,18 +5,7 @@ import PhotoUploader from "@/components/PhotoUploader";
 import ToneSelector from "@/components/ToneSelector";
 import ResultView from "@/components/ResultView";
 import { Tone } from "@/lib/anthropic";
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(",")[1] ?? "");
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+import { resizeImageFile } from "@/lib/resizeImage";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -36,17 +25,22 @@ export default function Home() {
     setResult(null);
 
     try {
-      const base64 = await fileToBase64(file);
+      const { base64, mediaType } = await resizeImageFile(file);
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64, mediaType: file.type, tone }),
+        body: JSON.stringify({ image: base64, mediaType, tone }),
       });
-      const data = await res.json();
+      let data: { result?: string; error?: string };
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("서버 응답을 처리할 수 없습니다. 다른 사진으로 다시 시도해주세요.");
+      }
       if (!res.ok) {
         throw new Error(data.error ?? "요청 처리 중 오류가 발생했습니다.");
       }
-      setResult(data.result);
+      setResult(data.result ?? "");
     } catch (err) {
       setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
     } finally {
