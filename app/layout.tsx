@@ -10,6 +10,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5540260211811013"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         {children}
         <footer className="site-footer">
