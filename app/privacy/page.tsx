@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 const LAST_UPDATED = "2026-07-17";
-const CONTACT_EMAIL = "여기에 문의용 이메일 주소를 입력하세요";
+const CONTACT_EMAIL = "donnykim83@gmail.com";
 
 export default function PrivacyPage() {
   return (
