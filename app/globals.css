@@ -11,6 +11,12 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -18,6 +24,10 @@ body {
   font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   background: var(--bg);
   color: var(--ink);
+}
+
+button {
+  touch-action: manipulation;
 }
 
 main {
@@ -54,8 +64,71 @@ main {
   transition: border-color 0.15s ease;
 }
 
+.uploader__preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  object-fit: contain;
+  cursor: zoom-in;
+}
+
 .uploader--dragging {
   border-color: var(--accent);
+}
+
+.uploader__zoom-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.uploader__preview-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: auto;
+  touch-action: pinch-zoom;
+}
+
+.lightbox__image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  touch-action: pinch-zoom;
+}
+
+.lightbox__close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
 }
 
 .uploader__placeholder {
@@ -71,12 +144,6 @@ main {
 
 .uploader__placeholder span {
   font-size: 12px;
-}
-
-.uploader__preview {
-  width: 100%;
-  height: 260px;
-  object-fit: cover;
 }
 
 .uploader__actions {
@@ -159,6 +226,11 @@ main {
   cursor: not-allowed;
 }
 
+.submit-btn--secondary {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .error {
   color: #b3261e;
   font-size: 13px;
@@ -191,4 +263,180 @@ main {
   border-top: 1px solid var(--border);
   font-size: 12px;
   color: var(--muted);
+}
+
+.actor-match__photo-link {
+  display: block;
+  margin: 0 0 14px;
+}
+
+.actor-match__photo {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.actor-match__no-photo {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.actor-match__name {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.actor-match__credit {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.actor-match__credit a {
+  color: var(--muted);
+}
+
+.site-footer {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.site-footer a {
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+.static-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+}
+
+.static-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.static-section h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
+.static-section p {
+  line-height: 1.7;
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+.static-section ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.faq-list {
+  margin: 0;
+}
+
+.faq-item {
+  margin-bottom: 18px;
+}
+
+.faq-item:last-child {
+  margin-bottom: 0;
+}
+
+.faq-item dt {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.faq-item dd {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.static-back {
+  text-align: center;
+  font-size: 14px;
+}
+
+.static-back a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  main,
+  .static-page {
+    padding: 28px 16px 56px;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .header p {
+    font-size: 13px;
+  }
+
+  .uploader {
+    min-height: 220px;
+  }
+
+  .uploader__preview {
+    max-height: 320px;
+  }
+
+  .uploader__actions {
+    gap: 8px;
+  }
+
+  .uploader__action-btn {
+    font-size: 13px;
+    padding: 12px 4px;
+  }
+
+  .tone-selector {
+    gap: 8px;
+  }
+
+  .tone-selector__option {
+    padding: 10px 12px;
+  }
+
+  .static-section {
+    padding: 16px 18px;
+  }
+
+  .static-section h2 {
+    font-size: 16px;
+  }
+
+  .site-footer {
+    flex-wrap: wrap;
+    row-gap: 4px;
+    padding: 0 16px 32px;
+  }
 }

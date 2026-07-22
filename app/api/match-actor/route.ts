@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { analyzePhoto, Tone } from "@/lib/anthropic";
+import { matchActor } from "@/lib/anthropic";
+import { findActorPhoto } from "@/lib/wikipedia";
 import { checkRateLimit, getClientKey } from "@/lib/rateLimit";
 import { validateImagePayload } from "@/lib/validateImagePayload";
 
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { tone?: string };
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
@@ -26,17 +27,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validated.error }, { status: validated.status });
   }
 
-  const { tone } = body;
-  if (tone !== "fun" && tone !== "traditional") {
-    return NextResponse.json({ error: "잘못된 톤 값입니다." }, { status: 400 });
-  }
-
   try {
-    const result = await analyzePhoto(validated.data.image, validated.data.mediaType, tone as Tone);
-    return NextResponse.json({ result });
+    const match = await matchActor(validated.data.image, validated.data.mediaType);
+    const photo = await findActorPhoto(match.actorName, match.actorNameEn);
+    return NextResponse.json({
+      actorName: match.actorName,
+      reason: match.reason,
+      photo,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.";
-    console.error("analyze error:", message);
+    console.error("match-actor error:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

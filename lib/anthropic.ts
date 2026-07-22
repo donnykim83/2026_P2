@@ -78,3 +78,92 @@ export async function analyzePhoto(
   }
   return textBlock.text;
 }
+
+export type ActorMatch = {
+  subjectGender: "male" | "female";
+  actorName: string;
+  actorNameEn?: string;
+  reason: string;
+};
+
+const MATCH_SYSTEM_PROMPT = `당신은 관상학적 궁합을 재미있게 짚어주는 해설가입니다. 업로드된 인물 사진을 보고, 관상학적으로 잘 어울리는 "이상적인 배우자상"을 실존 배우의 이미지로 표현해서 추천하세요.
+
+규칙:
+- 먼저 사진 속 인물의 성별을 판단하고, 반드시 반대 성별의 배우를 추천하세요 (사진 속 인물이 남성이면 여성 배우를, 여성이면 남성 배우를 추천).
+- 실존하는, 폭넓게 알려진 배우만 추천하세요. 무명이거나 위키피디아에서 찾기 어려운 인물은 피하세요.
+- 미성년자이거나 심각한 사회적 논란의 중심에 있는 인물은 추천하지 마세요.
+- 국내외 구분 없이 자유롭게 선택하되, 위키피디아 검색에 쓸 수 있는 정식 이름(actorName)과, 가능하다면 영문/로마자 이름(actorNameEn)도 함께 알려주세요.
+- 외모를 비하하거나 부정적으로 단정짓는 표현은 사용하지 마세요.
+- 추천 이유는 2~3문장으로, 관상학적 특징(이목구비의 분위기, 인상 등)을 근거로 가볍고 유쾌하게 설명하세요.
+- 이것은 오락 목적의 콘텐츠이며 추천된 배우 개인과는 무관하고, 실제 인연이나 결혼을 의미하지 않는다는 것을 감안한 가벼운 톤을 유지하세요.`;
+
+const MATCH_TOOL_NAME = "report_actor_match";
+
+export async function matchActor(imageBase64: string, mediaType: string): Promise<ActorMatch> {
+  const anthropic = getClient();
+
+  const message = await anthropic.messages.create({
+    model: "claude-sonnet-5",
+    max_tokens: 500,
+    system: MATCH_SYSTEM_PROMPT,
+    tools: [
+      {
+        name: MATCH_TOOL_NAME,
+        description: "관상 궁합상 어울리는 배우 추천 결과를 구조화된 형태로 보고합니다.",
+        input_schema: {
+          type: "object",
+          properties: {
+            subjectGender: {
+              type: "string",
+              enum: ["male", "female"],
+              description: "사진 속 인물의 성별 추정치",
+            },
+            actorName: {
+              type: "string",
+              description: "추천 배우의 정식 이름 (한국 배우라면 한글 이름)",
+            },
+            actorNameEn: {
+              type: "string",
+              description: "위키피디아 검색용 영문/로마자 이름 (모르면 생략 가능)",
+            },
+            reason: {
+              type: "string",
+              description: "관상학적으로 어울리는 이유 (2~3문장, 오락 목적의 가벼운 톤)",
+            },
+          },
+          required: ["subjectGender", "actorName", "reason"],
+        },
+      },
+    ],
+    tool_choice: { type: "tool", name: MATCH_TOOL_NAME },
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: mediaType as
+                | "image/jpeg"
+                | "image/png"
+                | "image/gif"
+                | "image/webp",
+              data: imageBase64,
+            },
+          },
+          {
+            type: "text",
+            text: "이 사진 속 인물과 관상학적으로 어울리는 반대 성별의 유명 배우를 한 명 추천해주세요.",
+          },
+        ],
+      },
+    ],
+  });
+
+  const toolBlock = message.content.find((block) => block.type === "tool_use");
+  if (!toolBlock || toolBlock.type !== "tool_use") {
+    throw new Error("Claude로부터 추천 결과를 받지 못했습니다.");
+  }
+  return toolBlock.input as ActorMatch;
+}
